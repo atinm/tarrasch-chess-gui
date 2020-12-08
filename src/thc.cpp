@@ -43,22 +43,25 @@ using namespace thc;
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
+#if defined(THC_LINUX) || defined(THC_MAC)
 // return 0 if case insensitive match
-#ifdef THC_UNIX
-int strcmpi( const char *s, const char *t )
+int strcmp_ignore( const char *s, const char *t )
 {
-    bool same=true;
-    while( *s && *t && same )
-    {
-        char c = *s++;
-        char d = *t++;
-        same = (c==d) || (isascii(c) && isascii(d) && toupper(c)==toupper(d));
-    }
-    if( *s || *t )
-        same = false;
-    return same?0:1;
+    return strcasecmp(s, t);
 }
 #endif
+
+// return 0 if successful
+char* strcpy_s(char *dst, size_t n, const char *src)
+{
+    return strncpy(dst, src, n);
+}
+
+// return 0 if case insensitive match
+int strcmpi( const char *s, const char *t )
+{
+    return strcmp_ignore(s, t);
+}
 
 /****************************************************************************
  * PrivateChessDefs.h Chess classes - Internal implementation details

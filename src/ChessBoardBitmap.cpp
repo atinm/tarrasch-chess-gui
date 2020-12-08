@@ -723,6 +723,9 @@ void ChessBoardBitmap::ChessBoardCreate( int pix, const thc::ChessPosition &cp, 
         x = 0;
         for( int j=0; j<8; j++ )
         {
+	        // select bitmap
+    	    dc.SelectObject(new_chess_board_bmp);
+
             char c = *s++;
             if( c == '1' )  // dark square (note we skip light colour since whole board already initialised to that)
             {
@@ -1045,196 +1048,197 @@ void ChessBoardBitmap::ChessBoardCreate( int pix, const thc::ChessPosition &cp, 
                             cprintf("\n");
                     }
                 }  */  
-
-                // reselect bitmap
-                dc.SelectObject(new_chess_board_bmp);
-
             }
             dark = !dark;
             x += pix;
+
+            // select out the bitmap before using wxNativePixelData
+            dc.SelectObject(wxNullBitmap);
         }
         y += pix;
     }
 
-    wxNativePixelData bmdata(new_chess_board_bmp);
-    height = pix*8;
-    width  = pix*8;
-    width_bytes = density*width;
-	
-   	// Allocate an image of the board
-    if( buf_board )
-        delete buf_board;
-	buf_board = new byte[width_bytes*height];
-    memset( buf_board, 0, width_bytes*height);
-	
-	// Allocate an image of the box (pieces off the board)
-    if( buf_box )
-        delete buf_box;
-	buf_box   = new byte[width_bytes*height];
+	{
+		wxNativePixelData bmdata(new_chess_board_bmp);
+		height = pix * 8;
+		width = pix * 8;
+		width_bytes = density * width;
 
-	// Read the initial position displayed on the bitmap
-    wxNativePixelData::Iterator p(bmdata);
-    byte *dst = buf_board;
-    for( unsigned int row=0; row<height; row++ )
-    {
-        p.MoveTo(bmdata, 0, row );
-        for( unsigned int col=0; col<width; col++ )
-        {
-            *dst++ = p.Red();
-            *dst++ = p.Green();
-            *dst++ = p.Blue();
-            p++;
-        }
-    }
+		// Allocate an image of the board
+		if (buf_board)
+			delete buf_board;
+		buf_board = new byte[width_bytes * height];
+		memset(buf_board, 0, width_bytes * height);
 
-	// Read from position on left below (our looked up .bmp) into the box
-	//  at right. The box has all the piece/colour combinations we need
-    //  (eg only two pawns from each side are needed, one of each colour).
-    //  1,2,3 and 4 are empty squares used to setup colours.
-	//	
-    //  On the right squares marked with * are empty squares.
-	//
-	//	"rNbQkBnR"		 "rnbqkbnr"	 <- normal colours
-	//	"Pp1qK234"		 "pp*qk   "	 <- normal colours
-	//	"        "		 "rnbqkbnr"	 <- highlight colours
-	//	"        "		 "pp*qk   "	 <- highlight colours
-	//	"        "		 "PP*QK   "	 <- highlight colours
-	//	"        "		 "RNBQKBNR"	 <- highlight colours
-	//	"        "		 "PP*QK   "	 <- normal colours
-	//	"        "		 "RNBQKBNR"  <- normal
-	//
-	// Store these pieces from the board to their fixed
-	//  positions in the 'box'
+		// Allocate an image of the box (pieces off the board)
+		if (buf_box)
+			delete buf_box;
+		buf_box = new byte[width_bytes * height];
 
-	// Copy empty light square to all used normal light squares in the box
-	//  Note that '1'=c7, '2'=f7, '3'=g7, '4'=h7 are dark, highlight light
-	//  highlight dark, and  highlight line (ocean blue by default) colours
-	//  respectively and that the first six rows of the board (eg a6) are
-	//  initialised to light colour
-	Get( 'a','6', 'a','8' );  
-	Get( 'a','6', 'c','8' );
-	Get( 'a','6', 'e','8' );
-	Get( 'a','6', 'g','8' );
-	Get( 'a','6', 'b','7' );
-	Get( 'a','6', 'd','7' );
-	Get( 'a','6', 'a','2' );
-	Get( 'a','6', 'c','2' );
-	Get( 'a','6', 'e','2' );
-	Get( 'a','6', 'b','1' );
-	Get( 'a','6', 'd','1' );
-	Get( 'a','6', 'f','1' );
-	Get( 'a','6', 'h','1' );
+		// Read the initial position displayed on the bitmap
+		wxNativePixelData::Iterator p(bmdata);
+		byte *dst = buf_board;
+		for (unsigned int row = 0; row < height; row++)
+		{
+			p.MoveTo(bmdata, 0, row);
+			for (unsigned int col = 0; col < width; col++)
+			{
+				*dst++ = p.Red();
+				*dst++ = p.Green();
+				*dst++ = p.Blue();
+				p++;
+			}
+		}
 
-	// Copy empty dark square to all used normal dark squares in the box
-	Get( 'c','7', 'b','8' );
-	Get( 'c','7', 'd','8' );
-	Get( 'c','7', 'f','8' );
-	Get( 'c','7', 'h','8' );
-	Get( 'c','7', 'a','7' );
-	Get( 'c','7', 'c','7' );
-	Get( 'c','7', 'e','7' );
-	Get( 'c','7', 'b','2' );
-	Get( 'c','7', 'd','2' );
-	Get( 'c','7', 'a','1' );
-	Get( 'c','7', 'c','1' );
-	Get( 'c','7', 'e','1' );
-	Get( 'c','7', 'g','1' );
+		// Read from position on left below (our looked up .bmp) into the box
+		//  at right. The box has all the piece/colour combinations we need
+		//  (eg only two pawns from each side are needed, one of each colour).
+		//  1,2,3 and 4 are empty squares used to setup colours.
+		//
+		//  On the right squares marked with * are empty squares.
+		//
+		//	"rNbQkBnR"		 "rnbqkbnr"	 <- normal colours
+		//	"Pp1qK234"		 "pp*qk   "	 <- normal colours
+		//	"        "		 "rnbqkbnr"	 <- highlight colours
+		//	"        "		 "pp*qk   "	 <- highlight colours
+		//	"        "		 "PP*QK   "	 <- highlight colours
+		//	"        "		 "RNBQKBNR"	 <- highlight colours
+		//	"        "		 "PP*QK   "	 <- normal colours
+		//	"        "		 "RNBQKBNR"  <- normal
+		//
+		// Store these pieces from the board to their fixed
+		//  positions in the 'box'
 
-	// Copy empty highlight light square to all used highlight light squares in the box
-	Get( 'f','7', 'a','6' );  
-	Get( 'f','7', 'c','6' );
-	Get( 'f','7', 'e','6' );
-	Get( 'f','7', 'g','6' );
-	Get( 'f','7', 'b','5' );
-	Get( 'f','7', 'd','5' );
-	Get( 'f','7', 'a','4' );
-	Get( 'f','7', 'c','4' );
-	Get( 'f','7', 'e','4' );
-	Get( 'f','7', 'b','3' );
-	Get( 'f','7', 'd','3' );
-	Get( 'f','7', 'f','3' );
-	Get( 'f','7', 'h','3' );
+		// Copy empty light square to all used normal light squares in the box
+		//  Note that '1'=c7, '2'=f7, '3'=g7, '4'=h7 are dark, highlight light
+		//  highlight dark, and  highlight line (ocean blue by default) colours
+		//  respectively and that the first six rows of the board (eg a6) are
+		//  initialised to light colour
+		Get('a', '6', 'a', '8');
+		Get('a', '6', 'c', '8');
+		Get('a', '6', 'e', '8');
+		Get('a', '6', 'g', '8');
+		Get('a', '6', 'b', '7');
+		Get('a', '6', 'd', '7');
+		Get('a', '6', 'a', '2');
+		Get('a', '6', 'c', '2');
+		Get('a', '6', 'e', '2');
+		Get('a', '6', 'b', '1');
+		Get('a', '6', 'd', '1');
+		Get('a', '6', 'f', '1');
+		Get('a', '6', 'h', '1');
 
-	// Copy empty highlight dark square to all used highlight dark squares in the box
-	Get( 'g','7', 'b','6' );
-	Get( 'g','7', 'd','6' );
-	Get( 'g','7', 'f','6' );
-	Get( 'g','7', 'h','6' );
-	Get( 'g','7', 'a','5' );
-	Get( 'g','7', 'c','5' );
-	Get( 'g','7', 'e','5' );
-	Get( 'g','7', 'b','4' );
-	Get( 'g','7', 'd','4' );
-	Get( 'g','7', 'a','3' );
-	Get( 'g','7', 'c','3' );
-	Get( 'g','7', 'e','3' );
-	Get( 'g','7', 'g','3' );
+		// Copy empty dark square to all used normal dark squares in the box
+		Get('c', '7', 'b', '8');
+		Get('c', '7', 'd', '8');
+		Get('c', '7', 'f', '8');
+		Get('c', '7', 'h', '8');
+		Get('c', '7', 'a', '7');
+		Get('c', '7', 'c', '7');
+		Get('c', '7', 'e', '7');
+		Get('c', '7', 'b', '2');
+		Get('c', '7', 'd', '2');
+		Get('c', '7', 'a', '1');
+		Get('c', '7', 'c', '1');
+		Get('c', '7', 'e', '1');
+		Get('c', '7', 'g', '1');
 
-	// Copy white pieces to the box (normal)
-	Get( 'h','8', 'h','1', white_rook_mask,		&light_colour );
-	Get( 'b','8', 'g','1', white_knight_mask,	&dark_colour  );
-	Get( 'f','8', 'f','1', white_bishop_mask,	&light_colour );
-	Get( 'e','7', 'e','1', white_king_mask,		&dark_colour  );
-	Get( 'e','7', 'e','2', white_king_mask,		&light_colour );		// White king on white square
-	Get( 'd','8', 'd','1', white_queen_mask,	&light_colour );
-	Get( 'd','8', 'd','2', white_queen_mask,	&dark_colour  );		// White queen on black square
-	Get( 'f','8', 'c','1', white_bishop_mask,	&dark_colour  );
-    Get( 'b','8', 'b','1', white_knight_mask,   &light_colour );
-	Get( 'h','8', 'a','1', white_rook_mask,		&dark_colour  );
-	Get( 'a','7', 'a','2', white_pawn_mask,		&light_colour );		// Only need pawns on a2, b2
-	Get( 'a','7', 'b','2', white_pawn_mask,		&dark_colour  );
+		// Copy empty highlight light square to all used highlight light squares in the box
+		Get('f', '7', 'a', '6');
+		Get('f', '7', 'c', '6');
+		Get('f', '7', 'e', '6');
+		Get('f', '7', 'g', '6');
+		Get('f', '7', 'b', '5');
+		Get('f', '7', 'd', '5');
+		Get('f', '7', 'a', '4');
+		Get('f', '7', 'c', '4');
+		Get('f', '7', 'e', '4');
+		Get('f', '7', 'b', '3');
+		Get('f', '7', 'd', '3');
+		Get('f', '7', 'f', '3');
+		Get('f', '7', 'h', '3');
 
-	// Copy white pieces to the box (highlight)
-	Get( 'h','8', 'h','3', white_rook_mask,		&highlight_light_colour );
-	Get( 'b','8', 'g','3', white_knight_mask,	&highlight_dark_colour  );
-	Get( 'f','8', 'f','3', white_bishop_mask,	&highlight_light_colour );
-	Get( 'e','7', 'e','3', white_king_mask,		&highlight_dark_colour  );
-	Get( 'e','7', 'e','4', white_king_mask,		&highlight_light_colour );		// White king on white square
-	Get( 'd','8', 'd','3', white_queen_mask,	&highlight_light_colour );
-	Get( 'd','8', 'd','4', white_queen_mask,	&highlight_dark_colour  );		// White queen on black square
-	Get( 'f','8', 'c','3', white_bishop_mask,	&highlight_dark_colour  );
-    Get( 'b','8', 'b','3', white_knight_mask,	&highlight_light_colour );
-	Get( 'h','8', 'a','3', white_rook_mask,		&highlight_dark_colour  );
-	Get( 'a','7', 'a','4', white_pawn_mask,		&highlight_light_colour );		// Only need pawns on a4, b4
-	Get( 'a','7', 'b','4', white_pawn_mask,		&highlight_dark_colour  );
+		// Copy empty highlight dark square to all used highlight dark squares in the box
+		Get('g', '7', 'b', '6');
+		Get('g', '7', 'd', '6');
+		Get('g', '7', 'f', '6');
+		Get('g', '7', 'h', '6');
+		Get('g', '7', 'a', '5');
+		Get('g', '7', 'c', '5');
+		Get('g', '7', 'e', '5');
+		Get('g', '7', 'b', '4');
+		Get('g', '7', 'd', '4');
+		Get('g', '7', 'a', '3');
+		Get('g', '7', 'c', '3');
+		Get('g', '7', 'e', '3');
+		Get('g', '7', 'g', '3');
 
-	// Copy black pieces to the box (normal)
-	Get( 'a','8', 'h','8', black_rook_mask,		&dark_colour  );
-	Get( 'g','8', 'g','8', black_knight_mask,	&light_colour );
-	Get( 'c','8', 'f','8', black_bishop_mask,	&dark_colour  );
-	Get( 'e','8', 'e','8', black_king_mask,		&light_colour );
-	Get( 'e','8', 'e','7', black_king_mask,		&dark_colour  );		// Black king on black square
-	Get( 'd','7', 'd','8', black_queen_mask,	&dark_colour  );
-	Get( 'd','7', 'd','7', black_queen_mask,	&light_colour );		// Black queen on white square
-	Get( 'c','8', 'c','8', black_bishop_mask,	&light_colour );
-    Get( 'g','8', 'b','8', black_knight_mask,	&dark_colour  );
-	Get( 'a','8', 'a','8', black_rook_mask,		&light_colour );
-	Get( 'b','7', 'a','7', black_pawn_mask,		&dark_colour  );		// Only need pawns on a7, b7
-	Get( 'b','7', 'b','7', black_pawn_mask,		&light_colour );
+		// Copy white pieces to the box (normal)
+		Get('h', '8', 'h', '1', white_rook_mask, &light_colour);
+		Get('b', '8', 'g', '1', white_knight_mask, &dark_colour);
+		Get('f', '8', 'f', '1', white_bishop_mask, &light_colour);
+		Get('e', '7', 'e', '1', white_king_mask, &dark_colour);
+		Get('e', '7', 'e', '2', white_king_mask, &light_colour); // White king on white square
+		Get('d', '8', 'd', '1', white_queen_mask, &light_colour);
+		Get('d', '8', 'd', '2', white_queen_mask, &dark_colour); // White queen on black square
+		Get('f', '8', 'c', '1', white_bishop_mask, &dark_colour);
+		Get('b', '8', 'b', '1', white_knight_mask, &light_colour);
+		Get('h', '8', 'a', '1', white_rook_mask, &dark_colour);
+		Get('a', '7', 'a', '2', white_pawn_mask, &light_colour); // Only need pawns on a2, b2
+		Get('a', '7', 'b', '2', white_pawn_mask, &dark_colour);
 
-	// Copy black pieces to the box (highlight)
-	Get( 'a','8', 'h','6', black_rook_mask,		&highlight_dark_colour  );
-	Get( 'g','8', 'g','6', black_knight_mask,	&highlight_light_colour );
-	Get( 'c','8', 'f','6', black_bishop_mask,	&highlight_dark_colour  );
-	Get( 'e','8', 'e','6', black_king_mask,		&highlight_light_colour );
-	Get( 'e','8', 'e','5', black_king_mask,		&highlight_dark_colour  );		// Black king on black square
-	Get( 'd','7', 'd','6', black_queen_mask,	&highlight_dark_colour  );
-	Get( 'd','7', 'd','5', black_queen_mask,	&highlight_light_colour );		// Black queen on white square
-	Get( 'c','8', 'c','6', black_bishop_mask,	&highlight_light_colour );
-    Get( 'g','8', 'b','6', black_knight_mask,	&highlight_dark_colour  );
-	Get( 'a','8', 'a','6', black_rook_mask,		&highlight_light_colour );
-	Get( 'b','7', 'a','5', black_pawn_mask,		&highlight_dark_colour  );		// Only need pawns on a5, b5
-	Get( 'b','7', 'b','5', black_pawn_mask,		&highlight_light_colour );
+		// Copy white pieces to the box (highlight)
+		Get('h', '8', 'h', '3', white_rook_mask, &highlight_light_colour);
+		Get('b', '8', 'g', '3', white_knight_mask, &highlight_dark_colour);
+		Get('f', '8', 'f', '3', white_bishop_mask, &highlight_light_colour);
+		Get('e', '7', 'e', '3', white_king_mask, &highlight_dark_colour);
+		Get('e', '7', 'e', '4', white_king_mask, &highlight_light_colour); // White king on white square
+		Get('d', '8', 'd', '3', white_queen_mask, &highlight_light_colour);
+		Get('d', '8', 'd', '4', white_queen_mask, &highlight_dark_colour); // White queen on black square
+		Get('f', '8', 'c', '3', white_bishop_mask, &highlight_dark_colour);
+		Get('b', '8', 'b', '3', white_knight_mask, &highlight_light_colour);
+		Get('h', '8', 'a', '3', white_rook_mask, &highlight_dark_colour);
+		Get('a', '7', 'a', '4', white_pawn_mask, &highlight_light_colour); // Only need pawns on a4, b4
+		Get('a', '7', 'b', '4', white_pawn_mask, &highlight_dark_colour);
 
-	// Empty squares
-	Get( 'a','6', 'c','2' );  // empty light square
-	Get( 'c','7', 'c','7' );  // empty dark square
-	Get( 'f','7', 'c','4' );  // empty highlight light square
-	Get( 'g','7', 'c','5' );  // empty highlight dark square
+		// Copy black pieces to the box (normal)
+		Get('a', '8', 'h', '8', black_rook_mask, &dark_colour);
+		Get('g', '8', 'g', '8', black_knight_mask, &light_colour);
+		Get('c', '8', 'f', '8', black_bishop_mask, &dark_colour);
+		Get('e', '8', 'e', '8', black_king_mask, &light_colour);
+		Get('e', '8', 'e', '7', black_king_mask, &dark_colour); // Black king on black square
+		Get('d', '7', 'd', '8', black_queen_mask, &dark_colour);
+		Get('d', '7', 'd', '7', black_queen_mask, &light_colour); // Black queen on white square
+		Get('c', '8', 'c', '8', black_bishop_mask, &light_colour);
+		Get('g', '8', 'b', '8', black_knight_mask, &dark_colour);
+		Get('a', '8', 'a', '8', black_rook_mask, &light_colour);
+		Get('b', '7', 'a', '7', black_pawn_mask, &dark_colour); // Only need pawns on a7, b7
+		Get('b', '7', 'b', '7', black_pawn_mask, &light_colour);
 
-	// Highlight line colour in h5
-	Get( 'h','7', 'h','5' );  // ocean blue by default
-    chess_board_bmp = new_chess_board_bmp;
+		// Copy black pieces to the box (highlight)
+		Get('a', '8', 'h', '6', black_rook_mask, &highlight_dark_colour);
+		Get('g', '8', 'g', '6', black_knight_mask, &highlight_light_colour);
+		Get('c', '8', 'f', '6', black_bishop_mask, &highlight_dark_colour);
+		Get('e', '8', 'e', '6', black_king_mask, &highlight_light_colour);
+		Get('e', '8', 'e', '5', black_king_mask, &highlight_dark_colour); // Black king on black square
+		Get('d', '7', 'd', '6', black_queen_mask, &highlight_dark_colour);
+		Get('d', '7', 'd', '5', black_queen_mask, &highlight_light_colour); // Black queen on white square
+		Get('c', '8', 'c', '6', black_bishop_mask, &highlight_light_colour);
+		Get('g', '8', 'b', '6', black_knight_mask, &highlight_dark_colour);
+		Get('a', '8', 'a', '6', black_rook_mask, &highlight_light_colour);
+		Get('b', '7', 'a', '5', black_pawn_mask, &highlight_dark_colour); // Only need pawns on a5, b5
+		Get('b', '7', 'b', '5', black_pawn_mask, &highlight_light_colour);
+
+		// Empty squares
+		Get('a', '6', 'c', '2'); // empty light square
+		Get('c', '7', 'c', '7'); // empty dark square
+		Get('f', '7', 'c', '4'); // empty highlight light square
+		Get('g', '7', 'c', '5'); // empty highlight dark square
+
+		// Highlight line colour in h5
+		Get('h', '7', 'h', '5'); // ocean blue by default
+	}
+	chess_board_bmp = new_chess_board_bmp;
 
 	// Setup the position
 	SetChessPosition( cp, highlight );
