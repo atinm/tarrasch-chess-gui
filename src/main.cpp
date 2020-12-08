@@ -950,7 +950,7 @@ bool ChessApp::OnInit()
     int disp_width, disp_height;
     wxDisplaySize(&disp_width, &disp_height);
     cprintf( "Display size = %d x %d\n", disp_width, disp_height );
-    objs.repository = new Repository;
+    objs.repository = new Repository();
 
     // Use these as fallbacks/defaults
     int xx = (disp_width * 10) /100;
@@ -1323,7 +1323,7 @@ ChessFrame::ChessFrame(const wxString& title, const wxPoint& pos, const wxSize& 
     menu_database->Append (ID_DATABASE_MATERIAL,            "Material balance search", "Search the database for a specific material balance, with optional locked down squares" );
     menu_database->Append (ID_DATABASE_SHOW_ALL,            "Show all games", "Show all database games - equivalent to searching for the standard starting position");
     menu_database->Append (ID_DATABASE_PLAYERS,             "Show all ordered by player", "Show all games ordered by White player, useful for searching for players");
-    menu_database->Append (ID_DATABASE_SELECT,              "Select current database", "Specify which database file to use for searches");
+    menu_database->Append (ID_DATABASE_SELECT,              "Select database", "Specify which database file to use for searches");
     menu_database->Append (ID_DATABASE_CREATE,              "Create new database", "Create a new database file from scratch");
     menu_database->Append (ID_DATABASE_APPEND,              "Append to database", "Append games to an existing database");
     // menu_database->Append (ID_DATABASE_MAINTENANCE,         "INTERNAL TEST - REMOVE SOON - Maintain database");

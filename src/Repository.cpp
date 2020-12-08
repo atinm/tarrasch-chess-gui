@@ -68,7 +68,7 @@ Repository::Repository( bool use_defaults )
     SetDirectories();
     nv.m_doc_dir  = doc_dir;
     database.m_file = doc_dir + "/" + database.m_file;
-    book.m_file     = doc_dir + "/" + book.m_file;
+    book.m_file     = resources_dir + "/" + book.m_file;
     log.m_file      = doc_dir + "/" + log.m_file;
     engine.m_file   = exe_dir + "/Engines/" + engine.m_file;
 
@@ -214,7 +214,7 @@ Repository::Repository( bool use_defaults )
                 if( wfn1.FileExists() )
                 {
                     database.m_file = wfn1.GetFullPath();
-                    std::string s = database.m_file;
+                    std::string s = std::string(database.m_file);
                     cprintf( "One time only change to database file: %s\n", s.c_str() );
                 }
             }
@@ -225,7 +225,7 @@ Repository::Repository( bool use_defaults )
                 if( wfn2.FileExists() )
                 {
                     engine.m_file = wfn2.GetFullPath();
-                    std::string s = engine.m_file;
+                    std::string s = std::string(engine.m_file);
                     cprintf( "One time only change to engine file: %s\n", s.c_str() );
                 }
             }
@@ -235,7 +235,7 @@ Repository::Repository( bool use_defaults )
                 if( wfn2.FileExists() )
                 {
                     engine.m_file = wfn2.GetFullPath();
-                    std::string s = engine.m_file;
+                    std::string s = std::string(engine.m_file);
                     cprintf( "One time only change to engine file: %s\n", s.c_str() );
                 }
             }
@@ -462,6 +462,7 @@ void Repository::SetDirectories()
     // Find directories we plan to use
     wxString doc = stdp.GetDocumentsDir();              // eg "C:\Documents and Settings\Bill\My Documents"
     wxString without_end;
+    wxString user_config_dir = stdp.GetUserConfigDir();
     cprintf( "Windows document directory before: %s\n", static_cast<const char *>(doc.c_str()) );
     if( doc.EndsWith("\\",&without_end) )
         doc = without_end;
@@ -470,16 +471,20 @@ void Repository::SetDirectories()
     wxFileName exe(tmp);     
     wxArrayString dirs = exe.GetDirs();
     exe_dir = exe.GetPath();
+#ifdef THC_WINDOWS
     if( dirs.Count() > 1 )
         name = dirs[dirs.Count()-1];
     if( name=="vc_mswd" || name=="vc_msw" || name=="vc_mswud" || name=="vc_mswu" ) // during development
         name = "Tarrasch";
     if( name.Len() == 0 )
         name = "Tarrasch";
+#else
+    name = "Tarrasch";
+#endif
     bool ini_exists = false;
     bool mkdir = false;
-    doc_dir = doc + "/" + name;
-    ini_filename = exe_dir + "/Tarrasch.ini";
+    doc_dir = doc;
+    ini_filename = user_config_dir + "/" + name + "/Tarrasch.ini";
     wxFileName ini1(ini_filename);
     if( ini1.FileExists() )
     {
@@ -488,14 +493,14 @@ void Repository::SetDirectories()
     }
     else
     {
-        if( !wxDirExists(doc_dir) )
+        if( !wxDirExists(user_config_dir + "/" + name) )
         {
-            if( wxMkdir(doc_dir) )
+            if( wxMkdir(user_config_dir + "/" + name) )
                 mkdir = true;
             else
-                doc_dir = doc;
+                user_config_dir = doc;
         }
-        ini_filename = doc_dir + "/Tarrasch.ini";
+        ini_filename = user_config_dir  + "/" + name + "/Tarrasch.ini";
         wxFileName ini2(ini_filename);
         if( !mkdir && ini2.FileExists() )
             ini_exists = true;
@@ -523,7 +528,8 @@ void Repository::SetDirectories()
 #endif
 
     // Hopefully one time only, copy (actually move) original default.tdb
-    wxString exe_db = exe_dir + "/" + DEFAULT_DATABASE;
+    resources_dir = stdp.GetResourcesDir();
+    wxString exe_db = resources_dir + "/" + DEFAULT_DATABASE;
     wxString doc_db = doc_dir + "/" + DEFAULT_DATABASE;
     wxFileName fn_exe_db(exe_db);
     wxFileName fn_doc_db(doc_db);

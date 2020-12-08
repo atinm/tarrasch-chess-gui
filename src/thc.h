@@ -34,6 +34,7 @@
 
 // Simple definition to aid platform portability (only remains of former Portability.h)
 int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
+char* strcpy_s(char *dst, size_t n, const char *src); // return 0 if successfully copied n chars from src to dst
 
 // Fast test for is square white or black. Intend to move this to namespace thc when convenient...
 inline bool is_dark( int sq )

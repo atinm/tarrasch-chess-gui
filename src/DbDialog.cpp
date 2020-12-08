@@ -659,8 +659,10 @@ void DbDialog::StatsCalculate()
     GamesCache temp;
     temp.gds.clear();
     cprintf( "Remove focus %d\n", track->focus_idx );
-    list_ctrl->SetItemState( track->focus_idx, 0, wxLIST_STATE_FOCUSED );
-    list_ctrl->SetItemState( track->focus_idx, 0, wxLIST_STATE_SELECTED );
+    if (list_ctrl->GetItemCount() > 0) {
+        list_ctrl->SetItemState( track->focus_idx, 0, wxLIST_STATE_DONTCARE );
+        list_ctrl->SetItemState( track->focus_idx, 0, wxLIST_STATE_SELECTED );
+    }
     thc::ChessRules cr_to_match = this->cr;
     bool add_go_back = false;
     std::string go_back_string;

@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <algorithm>
+#include "Portability.h"
 #include "thc.h"
 using namespace std;
 using namespace thc;
@@ -39,34 +40,25 @@ using namespace thc;
  *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
+#ifdef THC_UNIX
 // return 0 if case insensitive match
 int strcmp_ignore( const char *s, const char *t )
 {
-    return strcmpi(s, t);
+    return strcasecmp(s, t);
 }
+#endif
 
-// return 0 if successful
+// return 0 if successfully copied n chars from src to dst
 char* strcpy_s(char *dst, size_t n, const char *src)
 {
     return strncpy(dst, src, n);
 }
 
 // return 0 if case insensitive match
-#ifdef THC_UNIX
 int strcmpi( const char *s, const char *t )
 {
-    bool same=true;
-    while( *s && *t && same )
-    {
-        char c = *s++;
-        char d = *t++;
-        same = (c==d) || (isascii(c) && isascii(d) && toupper(c)==toupper(d));
-    }
-    if( *s || *t )
-        same = false;
-    return same?0:1;
+    return strcmp_ignore(s, t);
 }
-#endif
 
 /****************************************************************************
  * PrivateChessDefs.h Chess classes - Internal implementation details

@@ -51,6 +51,7 @@ void CtrlBox2::SetTxt( const wxString &txt_, bool WXUNUSED(redraw) )
     {
         this->txt = txt_;
         Clear();
+        SelectNone();
         WriteText(txt_);
      /*   if( redraw )
         {

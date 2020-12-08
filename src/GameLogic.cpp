@@ -72,7 +72,7 @@ GameLogic::GameLogic( PanelContext *canvas, CtrlChessTxt *lb, wxMenu *menu_file 
 {
 	mru.UseMenu(menu_file);
 	mru.AddFilesToMenu(menu_file);
-	mru.Load( *objs.repository->GetConfig() );
+	mru.Load( *(objs.repository->GetConfig()) );
 	state    = RESET;
     db_clipboard = false;
 	fix_layout_flag = false;
@@ -1139,22 +1139,24 @@ void GameLogic::CmdDatabase( thc::ChessRules &cr, DB_REQ db_req, PatternParamete
         bool operational = objs.db->IsOperational(error_msg);
         if( suspended )
         {
-            wxMessageBox(
-                "The database is not loaded. Tarrasch normally automatically loads the database at startup, but it did not do so on "
-                "this occasion because it detected another instance of Tarrasch already running. "
-				"This is a way of conserving memory, it prevents multiple copies of Tarrasch from all automatically loading "
-				"separate copies of a potentially huge database. You can manually load the database using the File > Open or "
-				"Database > Select current database menu", "Database not loaded", wxOK|wxICON_ERROR
-            );
+            GameLogic::CmdDatabaseSelect();
+            //wxMessageBox(
+            //    "The database is not loaded. Tarrasch normally automatically loads the database at startup, but it did not do so on "
+            //    "this occasion because it detected another instance of Tarrasch already running. "
+			//	"This is a way of conserving memory, it prevents multiple copies of Tarrasch from all automatically loading "
+			//	"separate copies of a potentially huge database. You can manually load the database using the File > Open or "
+			//	"Database > Select database menu", "Database not loaded", wxOK|wxICON_ERROR
+            //);
         }
         else if( !operational )
         {
-            wxMessageBox(
-                "The database is not currently running. To correct this select a database "
-                "using the 'Select current database' command in the database menu. If you don't have a database, you can download one "
-				"from www.triplehappy.com. Alternatively, you can create your own database "
-                "from .pgn files with the 'Create new database' command in the database menu.", "Database problem", wxOK|wxICON_ERROR
-            );
+            GameLogic::CmdDatabaseSelect();
+            //wxMessageBox(
+            //    "The database is not currently running. To correct this select a database "
+            //    "using the 'Select database' command in the database menu. If you don't have a database, you can download one "
+			//	"from www.triplehappy.com. Alternatively, you can create your own database "
+            //    "from .pgn files with the 'Create new database' command in the database menu.", "Database problem", wxOK|wxICON_ERROR
+            //);
         }
         else
         {
@@ -1307,7 +1309,7 @@ bool GameLogic::ProbeControlBlocks()
 void GameLogic::CmdDatabaseSelect()
 {
     Atomic begin;
-    wxFileDialog fd( objs.frame, "Select current database", "", "", "*.tdb", wxFD_FILE_MUST_EXIST );
+    wxFileDialog fd( objs.frame, "Select database", "", "", "*.tdb", wxFD_FILE_MUST_EXIST );
     wxString path( objs.repository->database.m_file );
     fd.SetPath(path);
 	DialogDetect detect;		// an instance of DialogDetect as a local variable allows tracking of open dialogs

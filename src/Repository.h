@@ -360,6 +360,7 @@ public:
 private:
     wxString exe_dir;
     wxString doc_dir;
+    wxString resources_dir;
     wxString ini_filename;
     void SetDirectories();
     wxConfig *config;
